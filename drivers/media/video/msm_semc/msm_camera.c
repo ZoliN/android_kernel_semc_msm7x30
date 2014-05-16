@@ -891,7 +891,7 @@ static int msm_divert_frame(struct msm_sync *sync,
 	return 0;
 }
 
-#if defined(CONFIG_MACH_SEMC_ZEUS) || defined(CONFIG_MACH_SEMC_PHOENIX)
+#ifdef CONFIG_BOARD_SEMC_ZEUS
 static int msm_divert_snapshot(struct msm_sync *sync,
 		struct msm_vfe_resp *data,
 		struct msm_stats_event_ctrl *se)
@@ -949,7 +949,7 @@ end:
 	}
 	return 0;
 }
-#endif /* CONFIG_MACH_SEMC_ZEUS */
+#endif /* CONFIG_BOARD_SEMC_ZEUS */
 
 static int msm_get_stats(struct msm_sync *sync, void __user *arg)
 {
@@ -1052,7 +1052,7 @@ static int msm_get_stats(struct msm_sync *sync, void __user *arg)
 					__func__, __LINE__);
 					rc = msm_divert_frame(sync, data, &se);
 					sync->pp_frame_avail = 0;
-#if defined(CONFIG_MACH_SEMC_ZEUS) || defined(CONFIG_MACH_SEMC_PHOENIX)
+#ifdef CONFIG_BOARD_SEMC_ZEUS
 			} else if ((sync->pp_mask & (PP_SNAP|PP_RAW_SNAP)) &&
 				  (data->type == VFE_MSG_SNAPSHOT ||
 				   data->type == VFE_MSG_OUTPUT_S)) {
@@ -1060,7 +1060,7 @@ static int msm_get_stats(struct msm_sync *sync, void __user *arg)
 								data, &se);
 					sync->pp_frame_avail = 0;
 			}
-#else
+#else /* CONFIG_BOARD_SEMC_ZEUS */
 			} else {
 				if ((sync->pp_mask & PP_PREV) &&
 					(data->type == VFE_MSG_OUTPUT_P)) {
@@ -1074,7 +1074,7 @@ static int msm_get_stats(struct msm_sync *sync, void __user *arg)
 				if (data->type == VFE_MSG_OUTPUT_S ||
 					data->type == VFE_MSG_OUTPUT_T)
 					rc = msm_divert_frame(sync, data, &se);
-#endif /* CONFIG_MACH_SEMC_ZEUS */
+#endif /* CONFIG_BOARD_SEMC_ZEUS */
 		}
 		break;
 
@@ -1470,7 +1470,7 @@ static int msm_frame_axi_cfg(struct msm_sync *sync,
 			return -EINVAL;
 		}
 		break;
-#if defined(CONFIG_MACH_SEMC_ZEUS) || defined(CONFIG_MACH_SEMC_PHOENIX)
+#ifdef CONFIG_BOARD_SEMC_ZEUS
 	case CMD_AXI_CFG_CONT_RAW_RGB:
 		pmem_type = MSM_PMEM_PREVIEW;
 		axi_data.bufnum2 =
@@ -1483,7 +1483,7 @@ static int msm_frame_axi_cfg(struct msm_sync *sync,
 			return -EINVAL;
 		}
 		break;
-#endif /* CONFIG_MACH_SEMC_ZEUS */
+#endif /* CONFIG_BOARD_SEMC_ZEUS */
 	case CMD_GENERAL:
 		data = NULL;
 		break;
@@ -1749,9 +1749,9 @@ static int msm_axi_config(struct msm_sync *sync, void __user *arg)
 	case CMD_AXI_CFG_PREVIEW:
 	case CMD_AXI_CFG_SNAP:
 	case CMD_RAW_PICT_AXI_CFG:
-#if defined(CONFIG_MACH_SEMC_ZEUS) || defined(CONFIG_MACH_SEMC_PHOENIX)
+#ifdef CONFIG_BOARD_SEMC_ZEUS
 	case CMD_AXI_CFG_CONT_RAW_RGB:
-#endif /* CONFIG_MACH_SEMC_ZEUS */
+#endif /* CONFIG_BOARD_SEMC_ZEUS */
 		return msm_frame_axi_cfg(sync, &cfgcmd);
 	case CMD_AXI_CFG_VPE:
 		return msm_vpe_frame_cfg(sync, (void *)&cfgcmd);
@@ -2568,21 +2568,21 @@ static void msm_vfe_sync(struct msm_vfe_resp *vdata,
 				__func__);
 			sync->pp_snap = qcmd;
 			spin_unlock_irqrestore(&pp_snap_spinlock, flags);
-#if defined(CONFIG_MACH_SEMC_ZEUS) || defined(CONFIG_MACH_SEMC_PHOENIX)
+#ifdef CONFIG_BOARD_SEMC_ZEUS
 			break;
 		}
 
 		if (sync->validframe) {
-#else
+#else /* CONFIG_BOARD_SEMC_ZEUS */
 		} else {
-#endif /* CONFIG_MACH_SEMC_ZEUS */
+#endif /* CONFIG_BOARD_SEMC_ZEUS */
 			if (atomic_read(&qcmd->on_heap))
 				atomic_add(1, &qcmd->on_heap);
 			msm_enqueue(&sync->pict_q, &qcmd->list_pict);
-#if defined(CONFIG_MACH_SEMC_ZEUS) || defined(CONFIG_MACH_SEMC_PHOENIX)
+#ifdef CONFIG_BOARD_SEMC_ZEUS
 		} else {
 		    return;
-#endif /* CONFIG_MACH_SEMC_ZEUS */
+#endif /* CONFIG_BOARD_SEMC_ZEUS */
 		}
 		break;
 
